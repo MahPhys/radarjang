@@ -55,3 +55,18 @@ async def test_agent_state_persistence(setup_state_db):
         assert len(records) == 1
         assert records[0].agent_name == "Analyst"
         assert records[0].status == "completed"
+
+
+def test_agents_instantiation_and_process_method():
+    from agents.base import BaseAgent
+    from agents.classifier import classifier_agent, ClassifierAgent
+    from agents.analyst import analyst_agent, AnalystAgent
+    from agents.historian import historian_agent, HistorianAgent
+    from agents.synthesis import synthesis_agent, SynthesisAgent
+
+    agents = [classifier_agent, analyst_agent, historian_agent, synthesis_agent]
+    for ag in agents:
+        assert isinstance(ag, BaseAgent)
+        assert hasattr(ag, "process")
+        assert callable(getattr(ag, "process"))
+

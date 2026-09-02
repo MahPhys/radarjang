@@ -50,6 +50,18 @@ class SynthesisAgent(BaseAgent):
             ("openai", "gpt-4o"),
         ]
 
+    async def process(self, *args, **kwargs) -> Any:
+        """
+        Implementation of BaseAgent.process.
+        If processed_items is provided (as first argument or keyword arg), synthesizes them.
+        Otherwise, runs the full end-to-end pipeline.
+        """
+        if args and isinstance(args[0], list):
+            return await self.synthesize(args[0])
+        if "processed_items" in kwargs and kwargs["processed_items"] is not None:
+            return await self.synthesize(kwargs["processed_items"])
+        return await self.run_full_pipeline()
+
     async def synthesize(self, processed_items: List[Dict[str, Any]]) -> str:
         """Synthesizes batch of processed news and sub-agent analyses into a comprehensive final text."""
         items_summary = []

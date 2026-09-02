@@ -55,3 +55,9 @@ async def test_channel_post_handler_processing():
         mock_dup.assert_called_once_with("@databaseradarj", 456)
         mock_save.assert_called_once()
         mock_vector.assert_called_once()
+
+
+def test_heavy_work_lock_import():
+    from agents.fetcher import heavy_work_lock
+    import asyncio
+    assert isinstance(heavy_work_lock, asyncio.Lock)

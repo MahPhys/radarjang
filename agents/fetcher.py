@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 from typing import Optional, Dict, Any
 from datetime import datetime
@@ -5,6 +6,9 @@ from utils.config import config
 from utils.logger import logger
 from services.database import is_news_duplicate, save_news_item
 from services.vector_store import vector_store
+
+# Shared concurrency lock for heavy operations across pipeline
+heavy_work_lock = asyncio.Lock()
 
 
 class ChannelListenerService:
