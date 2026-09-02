@@ -40,7 +40,8 @@ radar-e-jang-bot/
     ├── test_dedup.py
     ├── test_rag.py
     ├── test_handlers.py
-    └── test_channel_listener.py
+    ├── test_channel_listener.py
+    └── test_llm_xai.py
 ```
 
 ---

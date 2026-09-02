@@ -40,12 +40,17 @@ class Config:
     RATE_LIMIT_GROUP_PER_MIN: int = int(os.getenv("RATE_LIMIT_GROUP_PER_MIN", "20"))
     HEAVY_ANALYZE_COOLDOWN_SECONDS: int = int(os.getenv("HEAVY_ANALYZE_COOLDOWN_SECONDS", "300"))
 
-    # LLM API Keys
+    # LLM Configuration (xAI Grok)
+    XAI_API_KEY: str = os.getenv("XAI_API_KEY", "")
+    GROK_MODEL: str = os.getenv("GROK_MODEL", os.getenv("XAI_MODEL", "grok-4.3-latest"))
+    XAI_MODEL: str = GROK_MODEL
+
+    # Optional legacy keys (disabled by default)
     ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
     GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY", "") or os.getenv("GEMINI_API_KEY", "")
     DEEPSEEK_API_KEY: str = os.getenv("DEEPSEEK_API_KEY", "")
-    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
 
     CHROMA_PATH: str = os.getenv("CHROMA_PATH", "./chroma_db")
 

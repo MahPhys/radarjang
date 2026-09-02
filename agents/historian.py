@@ -2,6 +2,7 @@ from typing import Dict, Any
 from agents.base import BaseAgent
 from services.llm_service import llm_service
 from models.models import News
+from utils.config import config
 from utils.logger import logger
 
 HISTORIAN_SYSTEM_PROMPT = """شما تاریخ‌نگار و تحلیل‌گر تطبیقی روابط ایران و ایالات متحده آمریکا (از سال ۱۹۷۹ تا دوران معاصر) هستید.
@@ -29,8 +30,7 @@ class HistorianAgent(BaseAgent):
     def __init__(self):
         super().__init__("Historian")
         self.preferred_models = [
-            ("deepseek", "deepseek-chat"),
-            ("google", "gemini-2.5-flash"),
+            ("xai", config.GROK_MODEL),
         ]
 
     async def process(self, news: News, analyst_output: Dict[str, Any]) -> Dict[str, Any]:

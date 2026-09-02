@@ -1,6 +1,6 @@
 export type Severity = 'critical' | 'medium' | 'low';
 export type Category = 'military' | 'diplomatic' | 'economic' | 'intelligence' | 'all';
-export type ModelName = 'Claude-3.5 Sonnet' | 'GPT-4o' | 'Gemini 1.5 Pro' | 'DeepSeek-V3' | 'Grok-2';
+export type ModelName = 'xAI Grok 4.3' | 'Claude-3.5 Sonnet' | 'GPT-4o' | 'Gemini 1.5 Pro' | 'DeepSeek-V3' | 'Grok-2';
 
 export interface NewsItem {
   id: string;

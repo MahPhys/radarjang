@@ -291,10 +291,9 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     last_received_str = fetcher_agent.last_fetch_time.strftime("%Y-%m-%d %H:%M:%S UTC") if fetcher_agent.last_fetch_time else "در انتظار پیام جدید"
 
     active_models_list = (
-        "- دسته‌بندی‌کننده: Gemini Flash / DeepSeek\n"
-        "- تحلیل‌گر استراتژیک: Claude 3.5 Sonnet / GPT-4o\n"
-        "- تاریخ‌نگار تطبیقی: DeepSeek / Gemini Pro\n"
-        "- سنتز نهایی و پیش‌بینی: Claude 3.5 Sonnet / GPT-4o"
+        f"- مدل پایه و اختصاصی: xAI Grok ({config.GROK_MODEL})\n"
+        "- اندپوینت: https://api.x.ai/v1/chat/completions\n"
+        "- عامل‌های پردازشی متصل: Classifier, Analyst, Historian, Synthesis"
     )
 
     status_text = (

@@ -5,6 +5,7 @@ from services.llm_service import llm_service
 from services.database import update_news_state
 from services.vector_store import vector_store
 from models.models import News
+from utils.config import config
 from utils.logger import logger
 
 CLASSIFIER_SYSTEM_PROMPT = """شما یک تحلیلگر و دسته‌بندی‌کننده خبره در حوزه تحولات ژئوپلیتیک، نظامی، امنیتی و دیپلماتیک مرتبط با ایران و ایالات متحده آمریکا هستید.
@@ -26,8 +27,7 @@ class ClassifierAgent(BaseAgent):
     def __init__(self):
         super().__init__("Classifier")
         self.preferred_models = [
-            ("google", "gemini-2.5-flash"),
-            ("deepseek", "deepseek-chat"),
+            ("xai", config.GROK_MODEL),
         ]
 
     async def process(self, news: News) -> Dict[str, Any]:

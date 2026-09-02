@@ -10,6 +10,7 @@ from agents.fetcher import heavy_work_lock
 from services.llm_service import llm_service
 from services.database import get_db_session, update_news_state
 from models.models import News, Analysis, Prediction, analysis_news
+from utils.config import config
 from utils.logger import logger
 
 SYNTHESIS_SYSTEM_PROMPT = """شما دبیر ارشد تحلیل راهبردی دیدبان جنگ (رادار جنگ) در حوزه منازعات و روابط ایران و آمریکا هستید.
@@ -46,8 +47,7 @@ class SynthesisAgent(BaseAgent):
     def __init__(self):
         super().__init__("Synthesis")
         self.preferred_models = [
-            ("anthropic", "claude-3-5-sonnet-20241022"),
-            ("openai", "gpt-4o"),
+            ("xai", config.GROK_MODEL),
         ]
 
     async def process(self, *args, **kwargs) -> Any:

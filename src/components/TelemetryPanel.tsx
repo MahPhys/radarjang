@@ -48,18 +48,14 @@ export const TelemetryPanel: React.FC<TelemetryPanelProps> = ({ metrics, logs })
             ></div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 mt-3 pt-2 border-t border-slate-800/80">
+          <div className="grid grid-cols-2 gap-2 mt-3 pt-2 border-t border-slate-800/80">
             <div className="bg-slate-800/30 p-2 border border-slate-700/50 rounded text-center">
-              <div className="text-[10px] font-mono text-slate-400">GPT-4o</div>
-              <div className="text-xs font-mono font-bold text-slate-200 mt-0.5">${metrics.gptCost.toFixed(2)}</div>
+              <div className="text-[10px] font-mono text-slate-400">xAI Grok 4.3</div>
+              <div className="text-xs font-mono font-bold text-amber-400 mt-0.5">${(metrics.gptCost + metrics.claudeCost + metrics.geminiCost).toFixed(2)}</div>
             </div>
             <div className="bg-slate-800/30 p-2 border border-slate-700/50 rounded text-center">
-              <div className="text-[10px] font-mono text-slate-400">Claude-3.5</div>
-              <div className="text-xs font-mono font-bold text-slate-200 mt-0.5">${metrics.claudeCost.toFixed(2)}</div>
-            </div>
-            <div className="bg-slate-800/30 p-2 border border-slate-700/50 rounded text-center">
-              <div className="text-[10px] font-mono text-slate-400">Gemini Pro</div>
-              <div className="text-xs font-mono font-bold text-slate-200 mt-0.5">${metrics.geminiCost.toFixed(2)}</div>
+              <div className="text-[10px] font-mono text-slate-400">Embedding (bge-m3)</div>
+              <div className="text-xs font-mono font-bold text-emerald-400 mt-0.5">Local / $0.00</div>
             </div>
           </div>
         </div>

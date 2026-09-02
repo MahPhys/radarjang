@@ -4,6 +4,7 @@ from services.llm_service import llm_service
 from services.database import update_news_state
 from services.vector_store import vector_store
 from models.models import News
+from utils.config import config
 from utils.logger import logger
 
 ANALYST_SYSTEM_PROMPT = """شما تحلیل‌گر ارشد اطلاعاتی و استراتژیک حوزه منازعات و روابط ایران و آمریکا هستید.
@@ -33,8 +34,7 @@ class AnalystAgent(BaseAgent):
     def __init__(self):
         super().__init__("Analyst")
         self.preferred_models = [
-            ("anthropic", "claude-3-5-sonnet-20241022"),
-            ("openai", "gpt-4o"),
+            ("xai", config.GROK_MODEL),
         ]
 
     async def process(self, news: News) -> Dict[str, Any]:
