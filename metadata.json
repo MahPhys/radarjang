@@ -1,0 +1,6 @@
+{
+  "name": "Radar-e-Jang",
+  "description": "Production Multi-User Telegram Bot for Iran-USA Geopolitical and Military Intelligence Analysis",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
