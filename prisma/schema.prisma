@@ -1,0 +1,120 @@
+// Prisma schema for Radar-e-Jang on PostgreSQL (Vercel Postgres, Neon, Supabase, Railway)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model News {
+  id           String   @id @default(cuid())
+  title        String
+  summary      String   @db.Text
+  content      String   @db.Text
+  source       String
+  category     String   // 'military' | 'diplomatic' | 'economic' | 'intelligence'
+  priority     String   @default("medium") // 'high' | 'medium' | 'low'
+  status       String   @default("published") // 'published' | 'draft'
+  published_at String
+  created_at   DateTime @default(now())
+
+  @@index([category])
+  @@index([priority])
+  @@index([created_at])
+  @@map("news")
+}
+
+model Analysis {
+  id                   String   @id @default(cuid())
+  title                String
+  slug                 String   @unique
+  summary              String   @db.Text
+  content              String   @db.Text
+  category             String   // 'military' | 'diplomatic' | 'economic' | 'intelligence'
+  severity             String   @default("medium") // 'critical' | 'medium' | 'low'
+  historical_precedent String?  @db.Text
+  counter_analysis     String?  @db.Text
+  model_used           String   @default("xAI Grok 4.3")
+  confidence_score     Int      @default(90)
+  read_time            String   @default("۵ دقیقه")
+  views_count          Int      @default(0)
+  tags                 String[] @default([])
+  status               String   @default("published") // 'published' | 'draft'
+  published_at         String
+  created_at           DateTime @default(now())
+  updated_at           DateTime @updatedAt
+
+  @@index([category])
+  @@index([severity])
+  @@index([slug])
+  @@map("analyses")
+}
+
+model Prediction {
+  id                   String   @id @default(cuid())
+  title                String
+  timeframe            String   // 'short' | 'mid' | 'long'
+  timeframe_label      String
+  probability          Int      // 0 - 100
+  primary_scenario     String   @db.Text
+  alternative_scenario String?  @db.Text
+  risk_level           String   @default("medium") // 'critical' | 'high' | 'medium' | 'low'
+  trigger_events       String[] @default([])
+  status               String   @default("published") // 'published' | 'draft'
+  created_at           DateTime @default(now())
+
+  @@index([timeframe])
+  @@index([risk_level])
+  @@map("predictions")
+}
+
+model SiteSettings {
+  id                  String   @id @default("default_settings")
+  site_name           String   @default("رادار جنگ")
+  site_title          String   @default("دیدبان و مرجع تحلیل ژئوپلیتیک و منازعات ایران و آمریکا")
+  hero_title          String   @default("رصد تحولات راهبردی، توازن قوا و منازعات ایران و آمریکا")
+  hero_subtitle       String   @db.Text
+  accent_color        String   @default("#B91C1C")
+  logo_text           String   @default("رادار جنگ")
+  announcement_text   String   @default("")
+  announcement_active Boolean  @default(false)
+  contact_email       String   @default("contact@radarejang.ir")
+  telegram_channel    String   @default("@radarejang")
+  footer_text         String   @default("تمامی حقوق برای رادار جنگ محفوظ است.")
+  font_family         String   @default("Vazirmatn")
+  updated_at          DateTime @default(now()) @updatedAt
+
+  @@map("site_settings")
+}
+
+model ApiUsageLog {
+  id                String   @id @default(cuid())
+  provider          String   // 'xai' | 'groq' | 'google' | 'openai'
+  model             String
+  prompt_tokens     Int      @default(0)
+  completion_tokens Int      @default(0)
+  total_tokens      Int      @default(0)
+  estimated_cost    Float    @default(0.0)
+  endpoint          String   @default("/api/analyze")
+  status            String   @default("success") // 'success' | 'failed'
+  created_at        DateTime @default(now())
+
+  @@index([provider])
+  @@index([created_at])
+  @@map("api_usage")
+}
+
+model MediaFile {
+  id          String   @id @default(cuid())
+  filename    String
+  size        Int      // file size in bytes
+  mime_type   String
+  url         String   // Cloudinary URL or /uploads/filename
+  provider    String   @default("local") // 'local' | 'cloudinary' | 'external'
+  uploaded_at DateTime @default(now())
+
+  @@map("media_files")
+}

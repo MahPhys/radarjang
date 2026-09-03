@@ -1,146 +1,194 @@
 import React, { useState, useEffect } from 'react';
-import { Header } from './components/Header';
-import { CommandSidebar } from './components/CommandSidebar';
-import { AnalysisFeed } from './components/AnalysisFeed';
-import { CommandTerminal } from './components/CommandTerminal';
-import { PredictionsView } from './components/PredictionsView';
-import { TelemetryPanel } from './components/TelemetryPanel';
-import { Footer } from './components/Footer';
+import { dbStore } from './data/dbStore';
 import { 
-  initialSystemMetrics, 
-  sampleAnalyses, 
-  samplePredictions, 
-  systemLogs 
-} from './data/mockData';
-import { Category, AnalysisRecord, SystemMetrics, LogMessage } from './types';
+  NewsItem, 
+  AnalysisItem, 
+  PredictionItem, 
+  SiteSettings, 
+  ApiUsageLog, 
+  R2FileItem, 
+  AdminStats 
+} from './types';
+
+// Public Components
+import { Navbar } from './components/public/Navbar';
+import { PublicFooter } from './components/public/PublicFooter';
+import { HomePage } from './components/public/HomePage';
+import { AnalysisListPage } from './components/public/AnalysisListPage';
+import { AnalysisDetailPage } from './components/public/AnalysisDetailPage';
+import { PredictionsPage } from './components/public/PredictionsPage';
+import { AboutPage } from './components/public/AboutPage';
+
+// Admin Components
+import { AdminLogin } from './components/admin/AdminLogin';
+import { AdminLayout, AdminTab } from './components/admin/AdminLayout';
+import { AdminDashboard } from './components/admin/AdminDashboard';
+import { ManageNews } from './components/admin/ManageNews';
+import { ManageAnalyses } from './components/admin/ManageAnalyses';
+import { ManagePredictions } from './components/admin/ManagePredictions';
+import { ManageSettings } from './components/admin/ManageSettings';
+import { ManageR2Uploads } from './components/admin/ManageR2Uploads';
+import { ManageApiLogs } from './components/admin/ManageApiLogs';
 
 export default function App() {
-  const [metrics, setMetrics] = useState<SystemMetrics>(initialSystemMetrics);
-  const [analyses, setAnalyses] = useState<AnalysisRecord[]>(sampleAnalyses);
-  const [predictions] = useState(samplePredictions);
-  const [logs, setLogs] = useState<LogMessage[]>(systemLogs);
-  
-  const [activeCategory, setActiveCategory] = useState<Category>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeView, setActiveView] = useState<'feed' | 'terminal' | 'predictions' | 'status'>('feed');
-  const [activeCommand, setActiveCommand] = useState<string>('/analyze');
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [currentTime, setCurrentTime] = useState<string>('14:45:22');
+  // DB State synced from local D1 store
+  const [settings, setSettings] = useState<SiteSettings>(() => dbStore.getSettings());
+  const [news, setNews] = useState<NewsItem[]>(() => dbStore.getNews());
+  const [analyses, setAnalyses] = useState<AnalysisItem[]>(() => dbStore.getAnalyses());
+  const [predictions, setPredictions] = useState<PredictionItem[]>(() => dbStore.getPredictions());
+  const [apiLogs, setApiLogs] = useState<ApiUsageLog[]>(() => dbStore.getApiLogs());
+  const [r2Files, setR2Files] = useState<R2FileItem[]>(() => dbStore.getR2Files());
+  const [stats, setStats] = useState<AdminStats>(() => dbStore.getStats());
 
-  // Live Clock (Tehran Time)
+  // Routing State
+  const [currentPath, setCurrentPath] = useState<string>(() => {
+    const p = window.location.pathname;
+    return p && p !== '' ? p : '/';
+  });
+
+  // Admin Tab State
+  const [adminTab, setAdminTab] = useState<AdminTab>('dashboard');
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => dbStore.isAuthenticated());
+
+  // Refresh helper
+  const refreshDbState = () => {
+    setSettings(dbStore.getSettings());
+    setNews(dbStore.getNews());
+    setAnalyses(dbStore.getAnalyses());
+    setPredictions(dbStore.getPredictions());
+    setApiLogs(dbStore.getApiLogs());
+    setR2Files(dbStore.getR2Files());
+    setStats(dbStore.getStats());
+    setIsAuthenticated(dbStore.isAuthenticated());
+  };
+
+  // Synchronize Browser URL
+  const navigate = (path: string) => {
+    setCurrentPath(path);
+    try {
+      window.history.pushState({}, '', path);
+    } catch {
+      // ignore
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      const tehranTime = now.toLocaleTimeString('fa-IR', {
-        timeZone: 'Asia/Tehran',
-        hour12: false
-      });
-      setCurrentTime(tehranTime);
+    const handlePopState = () => {
+      setCurrentPath(window.location.pathname || '/');
     };
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
-    return () => clearInterval(interval);
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    setTimeout(() => {
-      setMetrics((prev) => ({
-        ...prev,
-        todayTokens: prev.todayTokens + Math.floor(Math.random() * 450) + 120,
-        lastFetch: 'چند لحظه پیش'
-      }));
-      setLogs((prev) => [
-        ...prev,
-        {
-          id: `log-${Date.now()}`,
-          timestamp: new Date().toLocaleTimeString('fa-IR', { hour12: false }),
-          level: 'INFO',
-          message: 'Manual refresh triggered: Synchronized Telethon & ChromaDB state.'
-        }
-      ]);
-      setIsRefreshing(false);
-    }, 800);
-  };
+  // Check if viewing a single analysis detail (/analysis/:id)
+  const isAnalysisDetail = currentPath.startsWith('/analysis/') && currentPath.length > 10;
+  const currentAnalysisId = isAnalysisDetail ? currentPath.replace('/analysis/', '') : null;
+  const currentAnalysis = currentAnalysisId ? dbStore.getAnalysisById(currentAnalysisId) : null;
 
-  const handleExecuteCommand = (cmd: string) => {
-    setActiveCommand(cmd);
-    if (cmd === '/predict') {
-      setActiveView('predictions');
-    } else if (cmd === '/analyze' || cmd === '/backfill') {
-      setActiveView('terminal');
-    } else {
-      setActiveView('feed');
-    }
-  };
-
-  const handleAddAnalysis = (newAnalysis: AnalysisRecord) => {
-    setAnalyses((prev) => [newAnalysis, ...prev]);
-    setMetrics((prev) => ({
-      ...prev,
-      todayTokens: prev.todayTokens + newAnalysis.tokensUsed,
-      totalNews: prev.totalNews + 1
-    }));
-  };
-
-  return (
-    <div dir="rtl" className="bg-[#0a0b0e] text-[#e2e8f0] h-screen w-screen flex flex-col font-sans overflow-hidden select-none">
-      {/* Top Tactical Header */}
-      <Header
-        metrics={metrics}
-        onRefresh={handleRefresh}
-        isRefreshing={isRefreshing}
-        activeView={activeView}
-        setActiveView={setActiveView}
-        currentTime={currentTime}
-      />
-
-      {/* Main Grid Layout */}
-      <main className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-0 overflow-hidden">
-        {/* Left/Start Sidebar: Bot Commands & Filter (col-span-3 or 2 on XL) */}
-        <div className="hidden md:block md:col-span-3 lg:col-span-2 h-full overflow-hidden">
-          <CommandSidebar
-            activeCategory={activeCategory}
-            setActiveCategory={setActiveCategory}
-            onExecuteCommand={handleExecuteCommand}
-            activeCommand={activeCommand}
+  // Render Admin View
+  if (currentPath.startsWith('/admin')) {
+    if (!isAuthenticated) {
+      return (
+        <div dir="rtl" className="bg-[#0b0c10] text-[#e2e8f0] min-h-screen">
+          <AdminLogin
+            settings={settings}
+            onSuccess={() => {
+              setIsAuthenticated(true);
+              refreshDbState();
+            }}
+            onBackToSite={() => navigate('/')}
           />
         </div>
+      );
+    }
 
-        {/* Center Main Stage (col-span-6 or 7 on XL) */}
-        <div className="col-span-12 md:col-span-9 lg:col-span-7 xl:col-span-7 h-full flex flex-col overflow-hidden border-x border-slate-800/80">
-          {activeView === 'feed' && (
-            <AnalysisFeed
+    return (
+      <div dir="rtl" className="bg-[#0b0c10] text-[#e2e8f0] min-h-screen">
+        <AdminLayout
+          activeTab={adminTab}
+          onTabChange={setAdminTab}
+          settings={settings}
+          onLogout={() => {
+            dbStore.logout();
+            setIsAuthenticated(false);
+            navigate('/');
+          }}
+          onBackToSite={() => navigate('/')}
+        >
+          {adminTab === 'dashboard' && (
+            <AdminDashboard
+              stats={stats}
               analyses={analyses}
-              activeCategory={activeCategory}
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
+              news={news}
+              predictions={predictions}
+              onNavigateTab={setAdminTab}
             />
           )}
-
-          {activeView === 'terminal' && (
-            <CommandTerminal
-              onAddAnalysis={handleAddAnalysis}
-              executedCommand={activeCommand}
-            />
+          {adminTab === 'news' && (
+            <ManageNews news={news} onRefresh={refreshDbState} />
           )}
-
-          {activeView === 'predictions' && (
-            <PredictionsView predictions={predictions} />
+          {adminTab === 'analyses' && (
+            <ManageAnalyses analyses={analyses} onRefresh={refreshDbState} />
           )}
-        </div>
+          {adminTab === 'predictions' && (
+            <ManagePredictions predictions={predictions} onRefresh={refreshDbState} />
+          )}
+          {adminTab === 'settings' && (
+            <ManageSettings settings={settings} onRefresh={refreshDbState} />
+          )}
+          {adminTab === 'uploads' && (
+            <ManageR2Uploads files={r2Files} onRefresh={refreshDbState} />
+          )}
+          {adminTab === 'api_logs' && (
+            <ManageApiLogs logs={apiLogs} />
+          )}
+        </AdminLayout>
+      </div>
+    );
+  }
 
-        {/* Right/End Sidebar: Telemetry, Tokens & RAG Status (col-span-3 on LG+) */}
-        <div className="hidden lg:block lg:col-span-3 xl:col-span-3 h-full overflow-hidden">
-          <TelemetryPanel metrics={metrics} logs={logs} />
-        </div>
+  // Render Public Website Views
+  return (
+    <div dir="rtl" className="bg-[#0f1117] text-[#e2e8f0] min-h-screen flex flex-col font-sans">
+      {/* Top Navbar */}
+      <Navbar
+        currentPath={currentPath}
+        onNavigate={navigate}
+        settings={settings}
+        isAuthenticated={isAuthenticated}
+      />
+
+      {/* Main Page Routing */}
+      <main className="flex-1">
+        {isAnalysisDetail && currentAnalysis ? (
+          <AnalysisDetailPage
+            analysis={currentAnalysis}
+            allNews={news}
+            onBack={() => navigate('/analysis')}
+          />
+        ) : currentPath === '/analysis' ? (
+          <AnalysisListPage
+            analyses={analyses}
+            onSelectAnalysis={(id) => navigate(`/analysis/${id}`)}
+          />
+        ) : currentPath === '/predictions' ? (
+          <PredictionsPage predictions={predictions} />
+        ) : currentPath === '/about' ? (
+          <AboutPage settings={settings} onNavigate={navigate} />
+        ) : (
+          <HomePage
+            settings={settings}
+            analyses={analyses}
+            news={news}
+            predictions={predictions}
+            onNavigate={navigate}
+          />
+        )}
       </main>
 
-      {/* Tactical Bottom Footer Bar */}
-      <Footer
-        channelName={metrics.channelName}
-        totalMessages={metrics.totalNews}
-      />
+      {/* Public Footer */}
+      <PublicFooter settings={settings} onNavigate={navigate} />
     </div>
   );
 }

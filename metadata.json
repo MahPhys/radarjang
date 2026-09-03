@@ -1,6 +1,6 @@
 {
   "name": "Radar-e-Jang",
-  "description": "Production Multi-User Telegram Bot for Iran-USA Geopolitical and Military Intelligence Analysis",
+  "description": "Clean, minimalist Persian website for Iran-USA geopolitical analysis with public portal and professional admin panel.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
